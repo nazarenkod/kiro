@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 import { generateAllElementLocators } from '../lib/locators/generate-all-locators.mjs';
 import { analyzeAccessibility } from '../lib/analysis/accessibility.mjs';
 import { detectAutomationName } from '../lib/appium/session.mjs';
+import { xmlToJSON } from '../lib/locators/source-parsing.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixture = resolve(here, '../examples/sample-android-source.xml');
@@ -22,6 +23,11 @@ const xml = await readFile(fixture, 'utf-8');
 // 1) automation detection
 const automationName = detectAutomationName(xml);
 check('detects uiautomator2 from Android source', automationName === 'uiautomator2');
+
+// 1b) xml -> json tree
+const tree = xmlToJSON(xml);
+check('xmlToJSON returns the hierarchy root', tree.tagName === 'hierarchy');
+check('xmlToJSON nodes carry attributes and path', tree.children[0].path === '0');
 
 // 2) locator generation
 const elements = generateAllElementLocators(xml, true, automationName);

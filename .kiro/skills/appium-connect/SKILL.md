@@ -26,6 +26,7 @@ Run from the repo root.
   `node .kiro/skills/appium-connect/scripts/attach.mjs --server <url> --session <id>`
 - Get page source (to stdout or a file):
   `node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> --out source.xml`
+  Add `--json` to get a readable JSON tree (`tagName`/`attributes`/`path`/`children`) instead of XML.
 - Screenshot to PNG:
   `node .kiro/skills/appium-connect/scripts/screenshot.mjs --session <id> --out shot.png`
 

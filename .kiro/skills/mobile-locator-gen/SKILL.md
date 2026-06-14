@@ -44,3 +44,13 @@ When the user pastes a Page Object class (or path) and asks to add/complete a lo
 ## Use case — full Page Object
 Run the engine without `--match`, then assemble a class for the screen following
 `mobile-test-standards`.
+
+## Inspect the raw structure (page source as JSON)
+To turn a page source XML into a readable JSON tree (`tagName`/`attributes`/`path`/`children`):
+
+- `node .kiro/skills/mobile-locator-gen/scripts/source-to-json.mjs --in source.xml`
+- Limit nesting for an overview: add `--depth 4` (deeper children are replaced by a count).
+- Works offline or piped from a live session:
+  `node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> | node .kiro/skills/mobile-locator-gen/scripts/source-to-json.mjs`
+
+`path` is the dot-separated index path used throughout the locator pipeline.
