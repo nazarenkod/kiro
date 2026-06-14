@@ -1,0 +1,16 @@
+{
+  "name": "appium-kiro-skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone Kiro skills/hooks lifted from appium/appium-mcp: connect to a running remote Appium session, generate locators/Page Objects, analyze page source for accessibility issues.",
+  "scripts": {
+    "test:offline": "node scripts/selftest.mjs"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.8",
+    "webdriver": "^9.23.0",
+    "xpath": "^0.0.34"
+  },
+  "license": "Apache-2.0"
+}

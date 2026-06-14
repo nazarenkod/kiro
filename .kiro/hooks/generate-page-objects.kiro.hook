@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Generate Page Object from current screen",
+  "description": "Capture the live page source from a running Appium session and generate a Page Object for the current screen.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Generate a Page Object for the current device screen using the mobile-locator-gen skill.\n\nSteps:\n1. Determine the Appium server URL and session id (ask the user if APPIUM_SERVER_URL / APPIUM_SESSION_ID are not set; they can start one with the appium-launch skill).\n2. Capture the live page source:\n   node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> --out /tmp/page-source.xml\n3. Generate locator candidates:\n   node .kiro/skills/mobile-locator-gen/scripts/generate-locators.mjs --in /tmp/page-source.xml\n4. Build a Page Object class for this screen following .kiro/steering/mobile-test-standards.md: choose the highest-priority (best) locator for each meaningful, named element, give fields clear names, and match the language/framework the project already uses (ask if unknown).\n5. Save the file in the project's Page Object location and show the result."
+  }
+}

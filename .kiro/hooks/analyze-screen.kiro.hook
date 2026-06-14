@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Analyze screen artifact",
+  "description": "Analyze a saved page source and screenshot from a failed test for accessibility issues and locator problems.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze a failed-test screen dump using the screen-analyzer skill.\n\nSteps:\n1. Ask the user for the page source XML path (and optionally the screenshot PNG). These are the artifacts a framework like Selenide saves on failure.\n2. Run:\n   node .kiro/skills/screen-analyzer/scripts/analyze.mjs --source <pageSource.xml> --screenshot <shot.png>\n3. Summarize the accessibility and locator findings by severity. If the failure was an element-not-found, point out the likely cause (ambiguous id, hidden/disabled element, brittle locator) and recommend a fix.\n4. If helpful, run the mobile-locator-gen engine on the same XML to propose a more robust locator for the failing element."
+  }
+}

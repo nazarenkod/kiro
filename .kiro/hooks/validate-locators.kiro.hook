@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Validate Page Object locators",
+  "description": "When a Page Object or locator file is saved, validate its locators against the live page source and flag broken ones.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*[Pp]age*.{ts,js,java,kt,py,rb,cs}",
+      "**/locators/**",
+      "**/*.pageobject.*",
+      "**/pageobjects/**"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Page Object / locator file was just saved. Validate its locators against the live screen.\n\nSteps:\n1. Read the saved file and extract its locators (strategy + selector).\n2. If an Appium session is available (APPIUM_SERVER_URL / APPIUM_SESSION_ID), capture the current page source:\n   node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> --out /tmp/page-source.xml\n   Otherwise ask the user for a page source file or skip with a note.\n3. Generate fresh candidates:\n   node .kiro/skills/mobile-locator-gen/scripts/generate-locators.mjs --in /tmp/page-source.xml\n4. For each locator in the file, check whether a matching element exists in the candidates. Report locators that no longer resolve (or are now ambiguous) and propose a replacement following .kiro/steering/mobile-test-standards.md priority. Do not rewrite the file unless the user confirms."
+  }
+}

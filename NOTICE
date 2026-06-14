@@ -1,0 +1,30 @@
+appium-kiro-skills
+==================
+
+This project packages selected source code from the Appium MCP server into
+standalone Kiro skills and hooks.
+
+Portions of this software are derived from:
+
+    appium-mcp
+    https://github.com/appium/appium-mcp
+    Copyright (c) Appium contributors
+    Licensed under the Apache License, Version 2.0
+
+The following modules are lifted (and adapted to plain Node ESM, decoupled from
+the MCP/fastmcp layer) from appium-mcp:
+
+  lib/locators/source-parsing.mjs      <- src/locators/source-parsing.ts
+  lib/locators/element-filter.mjs      <- src/locators/element-filter.ts
+  lib/locators/locator-generation.mjs  <- src/locators/locator-generation.ts
+  lib/locators/generate-all-locators.mjs <- src/locators/generate-all-locators.ts
+  lib/utils/collection.mjs             <- src/utils/collection.ts
+  lib/appium/session.mjs               <- src/utils/url.ts + src/tools/session/{attach-session,create-session}.ts
+  lib/appium/command.mjs               <- src/command.ts (remote WebDriver subset)
+
+lib/devicemanager/{adb,ios}.mjs are inspired by appium-mcp's devicemanager but
+re-implemented over the raw `adb` / `xcrun simctl` CLIs to avoid pulling in the
+heavy appium-adb / node-simctl dependencies.
+
+A copy of the Apache 2.0 license is available at:
+    https://www.apache.org/licenses/LICENSE-2.0
