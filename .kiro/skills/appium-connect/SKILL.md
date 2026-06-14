@@ -11,27 +11,37 @@ involved) and read live state from the device. Each script re-attaches by
 
 ## Prerequisites
 - An Appium server is running (e.g. `appium` on `http://127.0.0.1:4723`).
-- An active session exists. Its `sessionId` is known (start one with the
-  `appium-launch` skill, or take it from your test framework / `GET /sessions`).
+- At least one active session on that server (start one with the `appium-launch`
+  skill, or it already exists from your test framework / a connected device).
 - `npm install` has been run once at the repo root (installs `webdriver`).
 
 ## Configuration
 - Server URL: `--server <url>` or env `APPIUM_SERVER_URL` (default `http://127.0.0.1:4723`).
-- Session id: `--session <id>` or env `APPIUM_SESSION_ID`.
+- Session id: `--session <id>` or env `APPIUM_SESSION_ID`. **Optional** — if omitted,
+  the scripts query the server's active sessions and auto-select when there is
+  exactly one. If several exist, they print the list and ask you to pass `--session`.
 
 ## Commands
 Run from the repo root.
 
-- Verify connectivity:
-  `node .kiro/skills/appium-connect/scripts/attach.mjs --server <url> --session <id>`
+- List active sessions on the server:
+  `node .kiro/skills/appium-connect/scripts/list-sessions.mjs` (add `--json`)
+- Verify connectivity (auto-selects the session if there is only one):
+  `node .kiro/skills/appium-connect/scripts/attach.mjs`
 - Get page source (to stdout or a file):
-  `node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> --out source.xml`
-  Add `--json` to get a readable JSON tree (`tagName`/`attributes`/`path`/`children`) instead of XML.
+  `node .kiro/skills/appium-connect/scripts/page-source.mjs --out source.xml`
+  - `--json` — full readable JSON tree (`tagName`/`attributes`/`path`/`children`)
+  - `--compact` — smaller, readable JSON (only meaningful elements + key attributes)
 - Screenshot to PNG:
-  `node .kiro/skills/appium-connect/scripts/screenshot.mjs --session <id> --out shot.png`
+  `node .kiro/skills/appium-connect/scripts/screenshot.mjs --out shot.png`
+
+## Choosing among multiple sessions
+When more than one session is connected (e.g. two devices), run `list-sessions.mjs`,
+show the user the options (id / platform / device / app), and re-run with the chosen
+`--session <id>`.
 
 ## Typical flow
-1. Confirm the session is alive with `attach.mjs`.
+1. `list-sessions.mjs` (or just run a command and let it auto-select one session).
 2. Pipe `page-source.mjs` into the `mobile-locator-gen` skill to build/complete a
    Page Object, or into `screen-analyzer` for accessibility checks.
 

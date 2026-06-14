@@ -8,6 +8,7 @@ import { generateAllElementLocators } from '../lib/locators/generate-all-locator
 import { analyzeAccessibility } from '../lib/analysis/accessibility.mjs';
 import { detectAutomationName } from '../lib/appium/session.mjs';
 import { xmlToJSON } from '../lib/locators/source-parsing.mjs';
+import { compactTree, countNodes } from '../lib/locators/compact-source.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixture = resolve(here, '../examples/sample-android-source.xml');
@@ -28,6 +29,15 @@ check('detects uiautomator2 from Android source', automationName === 'uiautomato
 const tree = xmlToJSON(xml);
 check('xmlToJSON returns the hierarchy root', tree.tagName === 'hierarchy');
 check('xmlToJSON nodes carry attributes and path', tree.children[0].path === '0');
+
+// 1c) compact view is smaller than the full tree and keeps named elements
+const fullCount = countNodes(tree);
+const compact = compactTree(tree);
+const compactCount = countNodes(compact);
+check('compact tree is smaller than full tree', compactCount < fullCount);
+const flat = JSON.stringify(compact);
+check('compact tree keeps the Login element', flat.includes('com.example:id/login'));
+check('compact tree drops noise wrapper attributes', !flat.includes('FrameLayout') || flat.length < JSON.stringify(tree).length);
 
 // 2) locator generation
 const elements = generateAllElementLocators(xml, true, automationName);

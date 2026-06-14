@@ -41,8 +41,13 @@ npm run test:offline   # runs the offline self-test (no device needed)
 node .kiro/skills/appium-launch/scripts/list-devices.mjs
 node .kiro/skills/appium-launch/scripts/launch.mjs --platform android --udid emulator-5554 --package com.example --activity .MainActivity
 
-# 2. read the live screen (reuse the printed sessionId)
-node .kiro/skills/appium-connect/scripts/page-source.mjs --session <id> --out screen.xml
+# 1b. or connect to an already-running session (auto-selects if there is one;
+#     lists choices if several)
+node .kiro/skills/appium-connect/scripts/list-sessions.mjs
+
+# 2. read the live screen (--session optional; add --compact for a small readable JSON)
+node .kiro/skills/appium-connect/scripts/page-source.mjs --out screen.xml
+node .kiro/skills/appium-connect/scripts/page-source.mjs --compact
 
 # 3. generate locator candidates
 node .kiro/skills/mobile-locator-gen/scripts/generate-locators.mjs --in screen.xml --match login
