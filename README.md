@@ -16,6 +16,23 @@ accessibility logic is pure and runs fully offline.
 | `mobile-locator-gen` | Generate stable locator candidates from a page source and help complete a Page Object. |
 | `screen-analyzer` | Offline analysis of a saved page source + screenshot (e.g. a Selenide failure dump) for accessibility and locator problems. |
 
+### `gen-test` skill + custom agents (`.kiro/skills/gen-test/`, `.kiro/agents/`)
+An agent-orchestrated pipeline that turns a TestManager critical-functionality
+check into a compiled, green Kotlin UI test (for the `privat24-ui-tests` project).
+Design and closed decisions live in `.kiro/skills/gen-test/DESIGN.md` and
+`DECISIONS.md`. Orchestrator: `SKILL.md`; four custom agents in `.kiro/agents/`:
+
+| Agent | Model | Role |
+|-------|-------|------|
+| `tm-case-fetcher` | cheap | TestManager → strict spec; copies API bodies verbatim. |
+| `repo-scout` | cheap | Repo recon: existing block tests → template, screen/stub map, scroll facts. |
+| `ui-test-debugger` | default | Classifies failures from Selenide artifacts (log + `UIAssertionError` dump); no Appium (decision 13.3). |
+| `mr-composer` | cheap | Builds the MR from the dedicated `gen-test.md` template + evidence block. |
+
+Deterministic helpers under `scripts/` (`phase.sh`, `strip_html.py`,
+`log_run.py`, `mr_stats.py`, `metrics_summary.py`) keep metrics and MR numbers
+out of the model. Runs through **Kiro CLI**, not the IDE (decision 13.1 / §0).
+
 ### Hooks (`.kiro/hooks/`)
 - `generate-page-objects` (manual) — capture the live screen and build a Page Object.
 - `validate-locators` (on save) — re-check a Page Object's locators against the live screen.

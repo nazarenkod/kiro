@@ -5,3 +5,6 @@ package-lock.json
 screenshot.png
 screen.xml
 /page-source.xml
+
+# gen-test working artifacts (skill DESIGN.md §7)
+target/gen-test/
