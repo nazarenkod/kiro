@@ -16,26 +16,59 @@ tools:
 Авторитет: `DESIGN.md` крок 6 + рішення **13.3** (`DECISIONS.md`). Це
 виконавча інструкція агента.
 
-## Джерела (лише артефакти падіння Selenide — без appium)
+## Джерела (артефакти на диску — без live appium)
 
-Рішення 13.3: live-інспекція через appium-mcp **прибрана**. Дебаг працює
-виключно з того, що вже лежить на диску після прогону:
+Рішення 13.3 (ревізія): live-інспекція через appium-mcp **не піднімається**
+на пілоті. Дебаг працює з артефактів, які тест лишив на диску. Парсинг page
+source — **самописний** (рішення Q3): офлайн через `lib/locators/*` і скіл
+`mobile-locator-gen`, не через appium-mcp.
 
+Артефакти статичного падіння:
 - `target/logs/automation.log` — logback, повний лог прогону;
 - `target/surefire-reports/` — звіти TestNG;
 - дамп `UIAssertionError` від `toSelenideUiAssertionError()` — містить
   **локатор + скріншот + page source** у момент падіння. Selenide за
   замовчуванням складає їх у `build/reports` / `build/downloads`.
 
-**Локатори знаходиш сам** з цього page source. Пріоритет стратегій — за
-`.kiro/steering/mobile-test-standards.md`: accessibility id > id > платформні
-(`-ios predicate`/`-android uiautomator`) > xpath (лише атрибутивний) >
-class name. Скріншот — візуальний контекст, не джерело коду.
+**Локатори знаходиш сам** з page source:
+```bash
+# ранжовані кандидати локаторів з дампа (детект платформи автоматичний)
+node .kiro/skills/mobile-locator-gen/scripts/generate-locators.mjs \
+  --in <pageSource.xml> --match "<текст/опис елемента з expected>"
+```
+Пріоритет стратегій — за `.kiro/steering/mobile-test-standards.md`:
+accessibility id > id > платформні (`-ios predicate`/`-android uiautomator`)
+> xpath (лише атрибутивний) > class name. Бери `best`, якщо немає причин
+інакше. Скріншот — візуальний контекст, не джерело коду.
 
-> Опційно: офлайн-аналіз дампа можна прогнати наявним скілом
-> `screen-analyzer` (`node .kiro/skills/screen-analyzer/scripts/analyze.mjs
-> --source <pageSource.xml> --screenshot <shot.png>`) — він саме під дампи
-> падіння Selenide. Не обовʼязково.
+> Офлайн-аналіз дампа на проблеми (дублі id, прихований елемент, малий тач-
+> таргет) — наявний скіл `screen-analyzer`
+> (`node .kiro/skills/screen-analyzer/scripts/analyze.mjs --source <xml>
+> --screenshot <png>`). Корисно для класів `locator`/`flow`.
+
+## Reveal-скан: локатор елемента ПОЗА вьюпортом (tier-2)
+
+Статичний дамп падіння знято **внизу** списку (після невдалого скролу) — тож
+елемента, який лишився вище/нижче, у ньому може не бути. Тоді `generate-locators`
+на єдиному дампі його не знайде. Механізм (самописний, без appium-mcp):
+
+1. Оркестратор ганяє окрему фазу `reveal`:
+   `scripts/phase.sh <checkId> reveal -- mvn -s settings.xml test
+   -Dtest=<Клас>#<метод> -Dgen.test.reveal=<step>`. Хелпер тест-інфри
+   `RevealScan` скролить контейнер згори вниз і дампить **послідовність**
+   page source у `target/gen-test/reveal-<checkId>/step-NN.xml` до кінця
+   списку (детект стабілізації) або maxSteps, потім тест виходить.
+2. Ти читаєш ці файли **офлайн** і на кожному ганяєш
+   `generate-locators.mjs --in step-NN.xml --match "<expected>"` — шукаєш
+   цільовий елемент по тексту з ТМ.
+3. Знайшов → повертаєш стабільний локатор + на якому кроці скролу він
+   зʼявився (це і є факт «елемент досяжний за N скролів»). Це заповнює
+   `scrolled_elements` і чинить клас `scroll`/`locator`.
+4. Не знайшов у жодному кроці → tier-3 (ескалація; для віртуалізованих/
+   динамічних списків live appium-mcp — кандидат v2, не на пілоті).
+
+Факт використання reveal іде в метрику `reveal_used`. **appium/live-attach не
+піднімаєш** — reveal усе робить через штатну сесію самого тесту.
 
 ## Спершу класифікація, потім фікс
 

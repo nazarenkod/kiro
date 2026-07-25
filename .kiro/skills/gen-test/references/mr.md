@@ -31,8 +31,11 @@ python3 .kiro/skills/gen-test/scripts/mr_stats.py --base <base_branch>
 
 ## Блок доказів
 Для кожного TMId — платформи, `negative_control`, `debug_iterations`,
-`scroll_fix`, посилання на прогін. Джерело — рядки `metrics/runs.jsonl` по
-цих `check_id`. Рев'ювер бачить, **що саме перевірено**.
+`scroll_fix`, `reveal_used`, посилання на прогін. Джерело — рядки
+`metrics/runs.jsonl` по цих `check_id`. Плюс **traceability-карта**
+(step/expected → ассерт, з планом `plan-<checkId>.md`): ревьюер звіряє
+покриття ТМ по карті, а не перекладає перевірку заново. Рев'ювер бачить,
+**що саме перевірено** і **що цим покрито**.
 
 ## Гейт (обовʼязковий)
 MR **не створюється**, якщо для якогось TMId у діфі немає рядка в `runs.jsonl`

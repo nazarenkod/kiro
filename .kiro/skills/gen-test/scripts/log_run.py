@@ -47,7 +47,8 @@ DEFAULTS = {
     "flaky_retries": 0,
     "failure_classes": [],
     "scroll_fix": 0,
-    "appium_fallback_used": False,   # завжди False (рішення 13.3), лишено для сумісності
+    "reveal_used": 0,                # скільки разів знадобився reveal-скан (off-screen локатор)
+    "appium_fallback_used": False,   # live appium-mcp — tier-3/v2; на пілоті завжди False
     "code_edited_by_human": False,
     "human_seconds": 0,
 }

@@ -31,8 +31,8 @@ fi
 shift
 
 case "$phase" in
-  compile|run_aos|neg_control|run_ios|retry) ;;
-  *) echo "phase.sh: невідома фаза '$phase' (compile|run_aos|neg_control|run_ios|retry)" >&2; exit 2 ;;
+  compile|run_aos|neg_control|run_ios|retry|reveal) ;;
+  *) echo "phase.sh: невідома фаза '$phase' (compile|run_aos|neg_control|run_ios|retry|reveal)" >&2; exit 2 ;;
 esac
 
 out_dir="target/gen-test"

@@ -37,32 +37,41 @@ TestManager, а не доживає як рукописний, що правит
 
 ---
 
-## 13.3 — Live-інспекція через appium-mcp: **прибрано з пайплайна**
+## 13.3 — Live-інспекція через appium-mcp: **три слої, live appium — v2**
 
-Дебаг працює **виключно** з артефактів падіння Selenide. Appium/DebugPause/
-attach **не піднімаються** в пілоті (і поки що взагалі).
+*(Ревізія 2026-07-25 після питань реалізації Q3/Q4. Замінює попереднє
+формулювання «прибрано повністю».)*
 
-Джерела для дебагу:
-- `target/logs/automation.log` (logback, повний лог прогону);
-- `target/surefire-reports/` (звіти TestNG);
-- дамп `UIAssertionError` від `toSelenideUiAssertionError()` — містить
-  **локатор + скріншот + page source** у момент падіння.
+Дебаг **не піднімає live appium-mcp** на пілоті, але off-screen пошук локатора
+розвʼязується **самописним reveal-сканом**, а не ескалацією. Три слої:
 
-Агент `ui-test-debugger` **сам** знаходить і чинить локатори з цього page
-source (пріоритет стратегій — за `mobile-test-standards.md`:
-accessibility id > id > платформні > xpath). Скріншот — візуальний контекст.
+1. **Static dump** — артефакти падіння Selenide:
+   `automation.log`, `surefire-reports/`, дамп `UIAssertionError`
+   (**локатор + скріншот + page source**). Закриває більшість класів.
+2. **Reveal-скан** (off-screen локатор): хелпер тест-інфри `RevealScan` під
+   `-Dgen.test.reveal=<step>` скролить контейнер і дампить **послідовність**
+   page source у `target/gen-test/reveal-<checkId>/step-NN.xml` через **штатну
+   сесію самого тесту**; дебаггер офлайн шукає локатор через `mobile-locator-gen`.
+   Ні appium-mcp, ні live-attach, ні resume-файла.
+3. **Ескалація (tier-3)**: reveal не розрешив → людині. Live appium-mcp —
+   кандидат **v2** для віртуалізованих/динамічних списків.
+
+Парсинг page source — **самописний** (див. Q3): `lib/locators/*` +
+`mobile-locator-gen`, не appium-mcp.
 
 **Наслідки для реалізації:**
-- `ui-test-debugger` **без** тулів appium-mcp: `tools = [read, shell]`.
-- Утиліта `DebugPause` у тест-інфрі **не будується** (пункт 4 роадмепу знято).
-- Крок 6 пайплайна не має гілки live-інспекції; клас `unknown` → одразу
-  ескалація людині зі зведенням діагнозів.
-- Клас `scroll` закривається евристикою кодогену (13.6), не інспекцією.
-- Метрика `appium_fallback_used` завжди `false` — лишена у схемі як
-  сумісність, кандидат на видалення після пілоту.
-- Опційно можна переюзати наявний у репо скіл `screen-analyzer` для
-  офлайн-аналізу дампа page source + скріншота (він саме під це й є), але це
-  **не обовʼязково** для пайплайна.
+- `ui-test-debugger` **без** тулів appium-mcp: `tools = [read, shell]`. Локатори
+  знаходить сам через `generate-locators.mjs --match "<expected>"`.
+- Утиліта `DebugPause` **не будується**. Натомість потрібен хелпер `RevealScan`
+  у тест-інфрі цільового репо (скрол + дамп послідовності page source; ~30
+  рядків, активний лише під `-Dgen.test.reveal`). Пункт 4 роадмепу
+  переформульовано: не DebugPause, а RevealScan.
+- Додано фазу `reveal` у `phase.sh` і метрику `reveal_used` у `runs.jsonl`.
+- Клас `scroll` закривається евристикою кодогену (13.6) + reveal-сканом.
+- `appium_fallback_used` лишається у схемі, на пілоті завжди `false`
+  (маркер tier-3/v2).
+- Скіл `screen-analyzer` — опційний офлайн-аналіз дампа (дублі id, прихований
+  елемент), не обовʼязковий.
 
 ---
 
@@ -140,15 +149,46 @@ accessibility id > id > платформні > xpath). Скріншот — ві
 
 ---
 
+---
+
+## Q-рішення (питання реалізації, 2026-07-25)
+
+### Q1 — Верифікація відповідності ТМ: **traceability-карта**
+Верифікація «тест = ТМ» лишається розподіленою (дослівні тіла API →
+neg-control на цільовому ассерті → гейт MR → повне рев'ю 13.7), але додається
+**явна traceability-карта**: кожен `step`/`expected` спека → рядок/ассерт
+тесту. Пишеться у `plan-<checkId>.md`, виноситься в evidence-блок MR. Непокритий
+`expected` → ФЛАГ. Neg-control мутує саме ассерт **цільового** `expected`.
+Наслідок: ревьюер звіряє карту, а не перекладає ТМ заново.
+
+### Q2 — Окремий сабагент MR: **вже є** (`mr-composer`)
+Складання MR — окремий кастомний агент `.kiro/agents/mr-composer.md` (дешева
+модель, читає `gen-test.md`-шаблон, цифри від `mr_stats.py`, evidence у
+маркерах, гейт green+neg-control). Додаткового агента не заводимо.
+
+### Q3 — Парсинг page source: **самописний, без appium-mcp**
+Переюз наявного в репо: `lib/locators/*` (`xmlToJSON`, `generate-all-locators`,
+`compact-source`, `element-filter`) + скіл `mobile-locator-gen`. Офлайн над
+XML-дампом (static або reveal). appium-mcp для парсингу **не** використовуємо.
+
+### Q4 — Off-screen локатор: **reveal-скан** (див. ревізію 13.3)
+Замість «скролити до невідомого» або одразу appium-mcp — самописний reveal-скан
+(RevealScan → послідовність дампів → `mobile-locator-gen` офлайн). appium-mcp
+live — tier-3/v2. Деталі — у ревізії 13.3 вище.
+
+---
+
 ## Зведення впливу на обсяг реалізації
 
 | # | Рішення | Що будуємо / НЕ будуємо |
 |---|---|---|
 | 13.1 | Kiro CLI | Блокуючий чек #6637 перед боєм |
 | 13.2 | ТМ source of truth | План regen-friendly; стабільні імена/порядок |
-| 13.3 | Без live-інспекції | `ui-test-debugger` = read+shell; **DebugPause НЕ будуємо**; крок 6 без appium |
+| 13.3 | 3 слої дебагу | `ui-test-debugger` = read+shell; **DebugPause НЕ будуємо**, натомість **RevealScan**; фаза `reveal`; live appium — v2 |
 | 13.4 | iOS 100% | Крок 8 обовʼязковий |
 | 13.5 | Окремий `gen-test.md` | Заготовка в `references/`; людина ставить у `.gitlab/` |
-| 13.6 | scroll-always | Дефолт у `codegen.md`; контроль `scroll_fix` |
+| 13.6 | scroll-always | scrollTo по локатору Page Object; дефолт у `codegen.md`; контроль `scroll_fix` |
 | 13.7 | Повне рев'ю | Гейт MR = вхід у рев'ю; `time_to_merge_s` |
 | 13.8 | A/B опційно | Поверх готового пайплайна, не блокує |
+| Q1 | Traceability-карта | у плані + evidence MR; neg-control на цільовому `expected` |
+| Q3 | Самописний парсинг | `lib/locators/*` + `mobile-locator-gen`, без appium-mcp |

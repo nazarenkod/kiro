@@ -22,9 +22,10 @@ Kotlin UI-тест у `privat24-ui-tests`: компільований, зеле�
 ## Ключові принципи (незмінні)
 1. Вхід — конкретний блок (`functionalId`) або одна перевірка (`checkId`).
 2. Витяг опису — агент `tm-case-fetcher` на дешевій моделі; тіла API — **дослівно**.
-3. Дебаг дешевий: **лише артефакти падіння Selenide** (лог + дамп
-   `UIAssertionError` з локатором/скріншотом/page source). Appium/live-інспекція
-   **прибрані** (рішення 13.3).
+3. Дебаг дешевий, парсинг page source — **самописний** (`mobile-locator-gen` +
+   `lib/locators/*`, офлайн, без appium-mcp): static dump падіння Selenide →
+   **reveal-скан** для off-screen локатора → ескалація. Live appium-mcp — v2
+   last-resort (рішення 13.3, ревізія).
 4. **Зелений ≠ правильний** — обовʼязковий негативний контроль (крок 7).
 5. `gaps` — не блокер і не привід вигадувати: закриває людина на чекпоінті.
 6. Кожен прогін лишає рядок метрик автоматично (розділ 6 `DESIGN.md`).
@@ -44,14 +45,15 @@ Kotlin UI-тест у `privat24-ui-tests`: компільований, зеле�
                    Обʼєднані gaps → питання людині.  → ЧЕКПОІНТ (risk-based)
                    → references/planning.md
 3. CODEGEN         тест за conventions.md, еталон = template від скаута;
-                   скрол — за евристикою (scroll-always default, 13.6);
-                   брак екрана/компонента = ФЛАГ, не вигадка
-                   → references/codegen.md
+                   traceability-карта (step/expected → ассерт); скрол — за
+                   евристикою (scroll-always default, 13.6); брак екрана/
+                   компонента = ФЛАГ, не вигадка → references/codegen.md
 4. COMPILE         phase.sh compile → mvn test-compile → фікс inline (без девайса)
 5. RUN AOS         phase.sh run_aos → mvn test -Dtest=<Клас>#<метод>
 6. DEBUG           делегувати ui-test-debugger: класифікація → точковий фікс →
-                   повтор (bounded: 3 змістовні; flaky поза лімітом;
-                   unknown → ескалація). Фікс застосовує головний агент.
+                   повтор (bounded: 3 змістовні; flaky поза лімітом). Слої:
+                   static dump → reveal-скан (off-screen локатор, фаза reveal) →
+                   ескалація. Фікс застосовує головний агент.
                    → references/run-and-debug.md
 7. NEG-CONTROL     зламати ЦІЛЬОВИЙ ассерт/стаб → прогін МУСИТЬ впасти → git revert
 8. VERIFY iOS      обовʼязково після зеленого AOS для cross-platform (13.4)

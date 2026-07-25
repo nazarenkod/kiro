@@ -60,9 +60,11 @@ src/test/kotlin/tests/**` і повертає JSON:
 
 ## Блок доказів
 Для кожного TMId — платформи, `negative_control`, `debug_iterations`,
-`scroll_fix`, посилання на прогін. Джерело — рядки `runs.jsonl`
-(`.kiro/skills/gen-test/metrics/runs.jsonl`) по цих `check_id`. Рев'ювер
-бачить, **що саме перевірено**, а не лише діф.
+`scroll_fix`, `reveal_used`, посилання на прогін. Джерело — рядки `runs.jsonl`
+(`.kiro/skills/gen-test/metrics/runs.jsonl`) по цих `check_id`. Додай
+**traceability-карту** (step/expected → ассерт) з плану
+`target/gen-test/plan-<checkId>.md`, якщо він доступний. Рев'ювер бачить,
+**що саме перевірено** і **що покрито**, а не лише діф.
 
 ## Гейт (обовʼязковий)
 MR **не створюється**, якщо для якогось TMId у діфі немає рядка в

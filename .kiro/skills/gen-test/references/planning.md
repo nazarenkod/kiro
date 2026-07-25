@@ -67,6 +67,12 @@
 - стаби: [<JsonFilePath...>]   # нові / переюз (+ рішення по колізії)
 - скрол: <відомо зі скаута/template | default scroll-always>
 
+## Traceability (step/expected → покриття в тесті)
+- step 1 (<expected>) → <дія/навігація>
+- step 2 (<expected>) → assert <...>   ← ЦІЛЬОВИЙ (neg-control мутує його)
+- step N (<expected>) → assert <...>
+# кожен expected має покриття; непокритий → ФЛАГ
+
 ## Gaps → питання людині
 - [ ] <gap 1> → <питання>
 - [ ] <gap 2> → <питання>

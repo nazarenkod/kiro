@@ -81,6 +81,7 @@ def summarize(runs, mrs):
         "pct_failure_unknown": pct(fc_counts.get("unknown", 0), total_fc) if total_fc else None,
         "pct_failure_scroll": pct(fc_counts.get("scroll", 0), total_fc) if total_fc else None,
         "pct_runs_scroll_fix": pct(sum(1 for r in runs if r.get("scroll_fix", 0) > 0), n),
+        "pct_runs_reveal_used": pct(sum(1 for r in runs if r.get("reveal_used", 0) > 0), n),
         "pct_appium_fallback": pct(sum(1 for r in runs if r.get("appium_fallback_used")), n),
         "abandoned_by_looping": sum(1 for r in runs if r.get("outcome") == "abandoned"),
         "median_time_to_merge_s": median([m.get("time_to_merge_s") for m in mrs]),
@@ -140,6 +141,7 @@ def main():
     print(f"  частка unknown:                {s['pct_failure_unknown']}")
     print(f"  частка scroll:                 {s['pct_failure_scroll']}")
     print(f"% прогонів зі scroll_fix>0:       {s['pct_runs_scroll_fix']}")
+    print(f"% прогонів з reveal-сканом:       {s['pct_runs_reveal_used']}")
     print(f"% appium_fallback (має бути 0):   {s['pct_appium_fallback']}")
     print(f"медіана time_to_merge_s:          {s['median_time_to_merge_s']} ({s['mrs_total']} MR)")
 

@@ -32,11 +32,23 @@ scripts/phase.sh <checkId> run_aos -- mvn -s settings.xml test -Dtest=<Клас>
 
 ## Крок 6 — DEBUG (агент ui-test-debugger)
 
-**Тільки артефакти падіння Selenide** (рішення 13.3 — appium/live-інспекція
-прибрані):
-- `target/logs/automation.log`, `target/surefire-reports/`;
-- дамп `UIAssertionError` (**локатор + скріншот + page source**),
-  `build/reports` / `build/downloads`.
+Парсинг page source — **самописний** (Q3): `mobile-locator-gen` +
+`lib/locators/*`, офлайн, без appium-mcp.
+
+### Три слої (без live appium на пілоті)
+1. **Static dump** — єдиний дамп падіння Selenide
+   (`automation.log`, `surefire-reports/`, `UIAssertionError` з
+   **локатором + скріншотом + page source**, `build/reports`/`build/downloads`).
+   Закриває більшість: локатор на екрані, stub, flow, data.
+2. **Reveal-скан** — коли цільовий елемент **поза вьюпортом** і його немає в
+   static dump. Фаза `reveal`:
+   `scripts/phase.sh <checkId> reveal -- mvn ... -Dgen.test.reveal=<step>` →
+   хелпер `RevealScan` дампить послідовність page source у
+   `target/gen-test/reveal-<checkId>/step-NN.xml`; агент офлайн шукає локатор
+   через `generate-locators.mjs --match "<expected>"`. Самописно, через штатну
+   сесію тесту — **не** appium-mcp. Метрика `reveal_used`.
+3. **Ескалація (tier-3)** — reveal не розрешив (віртуалізований/динамічний
+   список тощо) → людині. Live appium-mcp тут — кандидат **v2**, не пілот.
 
 Агент **сам** знаходить локатори з page source (пріоритет —
 `mobile-test-standards.md`). Спершу **класифікація**, потім фікс:

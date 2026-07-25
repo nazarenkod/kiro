@@ -25,8 +25,10 @@ TestManager. Кожен тест: компільований, зелений н�
 ## Докази прогонів
 
 <!-- gen-test:evidence -->
-<!-- Цей блок повністю регенерується агентом mr-composer з metrics/runs.jsonl.
-     Не редагувати вручну між маркерами. -->
+<!-- Цей блок повністю регенерується агентом mr-composer з metrics/runs.jsonl
+     + traceability-карти з plan-<checkId>.md. Не редагувати вручну між
+     маркерами. Для кожного TMId: платформи, negative_control, debug_iterations,
+     scroll_fix, reveal_used, + карта step/expected → ассерт (покриття ТМ). -->
 <!-- /gen-test:evidence -->
 
 ## Зміни у стабах / тест-даних
